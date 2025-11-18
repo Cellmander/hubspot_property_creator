@@ -4,6 +4,7 @@ import requests
 import pandas as pd
 import json
 from io import BytesIO
+import unicodedata
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +14,15 @@ hubspot_token = os.getenv("HUBSPOT_TOKEN")
 VALID_TYPES = ["string", "enumeration", "number", "bool", "datetime", "date", "phone_number"]
 VALID_FIELDTYPES = ["text", "textarea", "select", "radio", "checkbox", "number", "booleancheckbox",
                     "date", "phonenumber", "file", "html"]
+#Lembrete: type = tipo do dado recebido; fieldType = como será exibido na interface
+
+def setName(label):
+    string = str(label)
+    
+    property_name = unicodedata.normalize('NFKD', string).encode('ASCII', 'ignore').decode('ASCII')
+    property_name = property_name.replace(' ', '_').replace('?', '_').lower()
+    
+    return property_name
 
 def validar_e_limpar_propriedade(row, index):
     """Valida e limpa cada propriedade antes de enviar"""
@@ -32,7 +42,7 @@ def validar_e_limpar_propriedade(row, index):
     
     prop = {
         "label": str(row.get("label", "")).strip(),
-        "name": str(row.get("name", "")).strip(),
+        "name": setName(row.get("label", "")),
         "type": type_clean,
         "fieldType": fieldtype,
         "groupName": str(row.get("groupName", "contactinformation")).strip()
